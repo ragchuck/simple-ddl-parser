@@ -83,6 +83,16 @@ class Output:
             dialects_clean_up(self.output_mode, data)
         return data
 
+    def process_comments(self, statement: Dict):
+        for key in statement:
+            table_name = statement[key]["table_name"]
+
+        target_table = self.get_table_from_tables_data(
+            statement.get(self.schema_key) or statement.get("schema"),
+            table_name,
+        )
+        target_table.append_statement_information_to_table(statement)
+
     def process_alter_and_index_result(self, table: Dict):
         if table.get("index_name"):
             self.add_index_to_table(table)
@@ -133,10 +143,15 @@ class Output:
             # process each item in parser output
             if "index_name" in statement or "alter_table_name" in statement:
                 self.process_alter_and_index_result(statement)
+            elif "comment_on_column" in statement or "comment_on_table" in statement:
+                self.process_comments(statement)
             else:
                 # process tables, types, sequence and etc. data
                 statement_data = self.process_statement_data(statement)
                 self.final_result.append(statement_data)
+
+        # for table_data in self.tables_dict.values():
+        #     self.final_result.append(table_data.to_dict())
         if self.group_by_type:
             self.group_by_type_result()
         return self.final_result

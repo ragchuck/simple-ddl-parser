@@ -960,6 +960,30 @@ class AlterTable:
             p[0]["project"] = table_data["project"]
 
 
+class Comment:
+    def p_expression_comment(self, p: List):
+        """expr : comment_on"""
+        p[0] = p[1]
+
+    def p_comment_on(self, p: List):
+        """comment_on : COMMENT ON ID id DOT id IS STRING
+        | COMMENT ON TABLE id IS STRING
+        """
+        p_list = list(p)
+        if p_list[3] == "TABLE":
+            p[0] = {
+                "comment_on_table": {"table_name": p_list[4], "comment": p_list[-1]}
+            }
+        else:
+            p[0] = {
+                "comment_on_column": {
+                    "table_name": p_list[4],
+                    "column_name": p_list[6],
+                    "comment": p_list[-1],
+                }
+            }
+
+
 class BaseSQL(
     Database,
     Table,
@@ -971,6 +995,7 @@ class BaseSQL(
     Type,
     Schema,
     TableSpaces,
+    Comment,
 ):
     def clean_up_id_list_in_equal(self, p_list: List) -> List:  # noqa R701
         if isinstance(p_list[1], str) and p_list[1].endswith("="):

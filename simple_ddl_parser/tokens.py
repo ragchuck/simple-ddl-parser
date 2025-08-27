@@ -41,6 +41,7 @@ common_statements = {
     "UPDATE",
     "DEFAULT",
     "COMMENT",
+    "IS",
     # bigquery
     "OPTIONS",
     # snoflake

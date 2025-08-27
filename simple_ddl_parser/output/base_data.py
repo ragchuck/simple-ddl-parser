@@ -47,9 +47,7 @@ class BaseData:
     )
     comment: Optional[str] = field(
         default=None,
-        metadata={
-            "exclude_if_not_provided": True,
-        },
+        metadata={"exclude_if_empty": True}
     )
     like: Optional[dict] = field(
         default_factory=dict,
@@ -279,6 +277,19 @@ class BaseData:
             self.set_default_columns_from_alter(statement)
         elif "primary_key" in statement:
             self.set_alter_to_table_data("primary_key", statement)
+        elif "comment_on_table" in statement:
+            self.set_table_comment(statement)
+        elif "comment_on_column" in statement:
+            self.set_column_comments(statement)
+
+    def set_table_comment(self, statement: Dict) -> None:
+        self.comment = statement["comment_on_table"]["comment"][1:-1]
+
+    def set_column_comments(self, statement: Dict) -> None:
+        for column in self.columns:
+            if column["name"] == statement["comment_on_column"]["column_name"]:
+                column["comment"] = statement["comment_on_column"]["comment"][1:-1]
+                break
 
     def set_default_columns_from_alter(self, statement: Dict) -> None:
         for column in self.columns:
